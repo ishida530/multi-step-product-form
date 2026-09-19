@@ -1,11 +1,8 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
-import {
-  validateMaxCartQuantity,
-  validateMinCartQuantity,
-  validateStockQuantity,
-} from "@/lib/products/field-validators";
+import { fieldErrorFromSchema } from "@/lib/products/field-validators";
+import { step3Schema } from "@/lib/products/schema";
 import { productFormOptions, withForm } from "../../form/use-app-form";
 
 export const AvailabilityStep = withForm({
@@ -39,7 +36,8 @@ export const AvailabilityStep = withForm({
                 name="stockQuantity"
                 validators={{
                   onChangeListenTo: ["limited"],
-                  onChange: ({ value }) => validateStockQuantity(value),
+                  onChange: ({ fieldApi }) =>
+                    fieldErrorFromSchema(step3Schema, fieldApi.form.state.values, "stockQuantity"),
                 }}
               >
                 {(field) => (
@@ -64,8 +62,8 @@ export const AvailabilityStep = withForm({
             name="minCartQuantity"
             validators={{
               onChangeListenTo: ["maxCartQuantity"],
-              onChange: ({ value, fieldApi }) =>
-                validateMinCartQuantity(value, fieldApi.form.getFieldValue("maxCartQuantity")),
+              onChange: ({ fieldApi }) =>
+                fieldErrorFromSchema(step3Schema, fieldApi.form.state.values, "minCartQuantity"),
             }}
           >
             {(field) => (
@@ -81,8 +79,8 @@ export const AvailabilityStep = withForm({
             name="maxCartQuantity"
             validators={{
               onChangeListenTo: ["minCartQuantity"],
-              onChange: ({ value, fieldApi }) =>
-                validateMaxCartQuantity(value, fieldApi.form.getFieldValue("minCartQuantity")),
+              onChange: ({ fieldApi }) =>
+                fieldErrorFromSchema(step3Schema, fieldApi.form.state.values, "maxCartQuantity"),
             }}
           >
             {(field) => (

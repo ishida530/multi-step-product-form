@@ -1,43 +1,20 @@
-import { step3BaseSchema } from "./schema";
+import type { z } from "zod";
 
 type FieldError = { message: string } | undefined;
 
-const fallbackMessage = "Nieprawidłowa wartość";
-
-/** Ilość na magazynie — pole jest renderowane (i wymagane) tylko dla produktu limitowanego. */
-export function validateStockQuantity(value: number | undefined): FieldError {
-  if (value === undefined) return { message: "Podaj ilość na magazynie" };
-
-  const result = step3BaseSchema.shape.stockQuantity.safeParse(value);
-  return result.success
-    ? undefined
-    : { message: result.error.issues[0]?.message ?? fallbackMessage };
-}
-
-/** Min. ilość w koszyku: liczba całkowita, nie większa niż maks. */
-export function validateMinCartQuantity(
-  value: number | undefined,
-  max: number | undefined
+/**
+ * Błąd ze schematu przypisany do jednego pola.
+ * Dzięki temu reguły zależne od kilku pól (np. min ≤ maks) są zapisane tylko w schemacie Zod,
+ * a pole pokazuje komunikat, gdy schemat zgłasza problem na jego ścieżce.
+ */
+export function fieldErrorFromSchema(
+  schema: z.ZodType,
+  values: unknown,
+  field: string
 ): FieldError {
-  const result = step3BaseSchema.shape.minCartQuantity.safeParse(value);
-  if (!result.success) {
-    return { message: result.error.issues[0]?.message ?? fallbackMessage };
-  }
-  if (typeof max === "number" && result.data > max) {
-    return { message: "Min. ilość nie może być większa niż maksymalna" };
-  }
-}
+  const result = schema.safeParse(values);
+  if (result.success) return undefined;
 
-/** Maks. ilość w koszyku: liczba całkowita, nie mniejsza niż min. */
-export function validateMaxCartQuantity(
-  value: number | undefined,
-  min: number | undefined
-): FieldError {
-  const result = step3BaseSchema.shape.maxCartQuantity.safeParse(value);
-  if (!result.success) {
-    return { message: result.error.issues[0]?.message ?? fallbackMessage };
-  }
-  if (typeof min === "number" && result.data < min) {
-    return { message: "Maks. ilość nie może być mniejsza niż minimalna" };
-  }
+  const issue = result.error.issues.find((item) => item.path[0] === field);
+  return issue ? { message: issue.message } : undefined;
 }

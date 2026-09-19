@@ -45,10 +45,10 @@ describe("step1Schema — informacje podstawowe", () => {
     expect(step1Schema.safeParse({ ...validStep1, name: "  ab  " }).success).toBe(false);
   });
 
-  it("wymaga SKU", () => {
-    expect(messages(step1Schema.safeParse({ ...validStep1, sku: "" }))).toContain(
-      "SKU produktu jest wymagane"
-    );
+  it("wymaga SKU i przy pustej wartości pokazuje tylko jeden komunikat", () => {
+    expect(messages(step1Schema.safeParse({ ...validStep1, sku: "" }))).toEqual([
+      "SKU produktu jest wymagane",
+    ]);
   });
 
   it.each(["MBP-14", "MBP 14", "MBP_14", "MBPĄ14", "MBP14!"])(
@@ -77,6 +77,12 @@ describe("step1Schema — informacje podstawowe", () => {
     expect(step1Schema.safeParse({ ...validStep1, category: "" }).success).toBe(false);
   });
 
+  it("odrzuca producenta, kategorię i cechę spoza list", () => {
+    expect(step1Schema.safeParse({ ...validStep1, manufacturer: "Nokia" }).success).toBe(false);
+    expect(step1Schema.safeParse({ ...validStep1, category: "Meble" }).success).toBe(false);
+    expect(step1Schema.safeParse({ ...validStep1, features: ["Latający"] }).success).toBe(false);
+  });
+
   it("wymaga co najmniej jednej cechy produktu", () => {
     expect(step1Schema.safeParse({ ...validStep1, features: [] }).success).toBe(false);
     expect(
@@ -98,8 +104,17 @@ describe("step2Schema — cena", () => {
     expect(step2Schema.safeParse({ ...valid, priceNet: undefined }).success).toBe(false);
   });
 
-  it("wymaga waluty", () => {
+  it("wymaga waluty z listy", () => {
     expect(step2Schema.safeParse({ ...valid, currency: "" }).success).toBe(false);
+    expect(step2Schema.safeParse({ ...valid, currency: "XYZ" }).success).toBe(false);
+    expect(step2Schema.safeParse({ ...valid, currency: "EUR" }).success).toBe(true);
+  });
+
+  it("akceptuje tylko stawki VAT z listy", () => {
+    for (const vatRate of [0, 5, 8, 23]) {
+      expect(step2Schema.safeParse({ ...valid, vatRate }).success).toBe(true);
+    }
+    expect(step2Schema.safeParse({ ...valid, vatRate: 19 }).success).toBe(false);
   });
 });
 

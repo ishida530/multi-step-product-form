@@ -1,4 +1,10 @@
 import { z } from "zod";
+import { CATEGORIES, CURRENCIES, FEATURES, MANUFACTURERS, VAT_RATES } from "./constants";
+
+/** Tekst musi pochodzić z predefiniowanej listy (pusty ciąg też jest odrzucany). */
+function oneOf(options: readonly string[], message: string) {
+  return z.string().refine((value) => options.includes(value), message);
+}
 
 /**
  * Krok 1 — Informacje podstawowe
@@ -13,12 +19,12 @@ export const step1Schema = z.object({
     .trim()
     .min(1, "SKU produktu jest wymagane")
     .max(24, "SKU może mieć maksymalnie 24 znaki")
-    .regex(/^[A-Za-z0-9]+$/, "SKU może zawierać tylko litery i cyfry"),
+    .regex(/^[A-Za-z0-9]*$/, "SKU może zawierać tylko litery i cyfry"),
   description: z.string().trim().max(500, "Opis jest zbyt długi").optional(),
-  manufacturer: z.string().min(1, "Wybierz producenta"),
-  category: z.string().min(1, "Wybierz kategorię"),
+  manufacturer: oneOf(MANUFACTURERS, "Wybierz producenta"),
+  category: oneOf(CATEGORIES, "Wybierz kategorię"),
   features: z
-    .array(z.string())
+    .array(oneOf(FEATURES, "Wybierz cechę z listy"))
     .min(1, "Wybierz co najmniej jedną cechę produktu"),
 });
 
@@ -32,8 +38,10 @@ export const step2Schema = z.object({
   priceGross: z
     .number({ error: "Podaj cenę brutto" })
     .positive("Cena brutto musi być większa od 0"),
-  vatRate: z.number({ error: "Wybierz stawkę VAT" }),
-  currency: z.string().min(1, "Wybierz walutę"),
+  vatRate: z
+    .number({ error: "Wybierz stawkę VAT" })
+    .refine((rate) => VAT_RATES.some((allowed) => allowed === rate), "Wybierz stawkę VAT"),
+  currency: oneOf(CURRENCIES, "Wybierz walutę"),
 });
 
 export type Step2Values = z.infer<typeof step2Schema>;
@@ -59,26 +67,28 @@ export const step3BaseSchema = z.object({
     .nonnegative("Maksymalna ilość nie może być ujemna"),
 });
 
-export const step3Schema = step3BaseSchema.superRefine((data, ctx) => {
-    if (data.limited && data.stockQuantity === undefined) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["stockQuantity"],
-        message: "Podaj ilość na magazynie",
-      });
-    }
-    if (data.minCartQuantity > data.maxCartQuantity) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["minCartQuantity"],
-        message: "Min. ilość nie może być większa niż maksymalna",
-      });
-      ctx.addIssue({
-        code: "custom",
-        path: ["maxCartQuantity"],
-        message: "Maks. ilość nie może być mniejsza niż minimalna",
-      });
-    }
+/**
+ * Reguły zależne od kilku pól. `when: always` uruchamia je niezależnie od błędów w innych
+ * polach — inaczej np. pusta „min. ilość” ukrywałaby błąd „magazyn wymagany”.
+ * Porównania z `undefined` dają `false`, więc reguły są bezpieczne dla brakujących wartości.
+ */
+const always = () => true;
+
+export const step3Schema = step3BaseSchema
+  .refine((data) => !data.limited || data.stockQuantity !== undefined, {
+    path: ["stockQuantity"],
+    error: "Podaj ilość na magazynie",
+    when: always,
+  })
+  .refine((data) => !(data.minCartQuantity > data.maxCartQuantity), {
+    path: ["minCartQuantity"],
+    error: "Min. ilość nie może być większa niż maksymalna",
+    when: always,
+  })
+  .refine((data) => !(data.maxCartQuantity < data.minCartQuantity), {
+    path: ["maxCartQuantity"],
+    error: "Maks. ilość nie może być mniejsza niż minimalna",
+    when: always,
   });
 
 export type Step3Values = z.infer<typeof step3Schema>;
