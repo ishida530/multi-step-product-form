@@ -3,6 +3,11 @@
 Implementacja zadania rekrutacyjnego: tabela produktów z paginacją oraz trzyetapowy formularz
 dodawania produktu osadzony w oknie modalnym, zgodny z projektem Figma.
 
+## Wersja online
+
+- Aplikacja: https://multi-step-product-form.vercel.app
+- Repozytorium: https://github.com/ishida530/multi-step-product-form
+
 ## Stack
 
 - **Next.js 16** (App Router) + **React 19** + **TypeScript**
