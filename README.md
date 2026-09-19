@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WorkConnect — Wieloetapowy formularz dodawania produktu
 
-## Getting Started
+Implementacja zadania rekrutacyjnego: tabela produktów z paginacją oraz trzyetapowy formularz
+dodawania produktu osadzony w oknie modalnym, zgodny z projektem Figma.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router) + **React 19** + **TypeScript**
+- **Tailwind CSS v4**
+- **shadcn/ui** — komponenty interfejsu (Dialog, Field, Select, Table, Switch, Checkbox, Badge...)
+- **TanStack Form** — zarządzanie stanem formularza i obsługa kroków
+- **Zod** — schematy walidacji dla każdego kroku (`lib/products/schema.ts`)
+- **nuqs** — synchronizacja paginacji tabeli z parametrem `page` w URL
+- **sonner** — powiadomienia toast
+
+## Uruchomienie lokalne
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikacja będzie dostępna pod adresem [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Inne dostępne skrypty:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build   # build produkcyjny
+npm run start   # uruchomienie builda produkcyjnego
+npm run lint    # ESLint
+npm test        # testy (Vitest + Testing Library)
+```
 
-## Learn More
+## Testy
 
-To learn more about Next.js, take a look at the following resources:
+- `lib/products/schema.test.ts` — schematy Zod wszystkich trzech kroków (każda reguła walidacji
+  ze specyfikacji) oraz przeliczanie cen netto/brutto.
+- `lib/products/field-validators.test.ts`, `lib/products/mappers.test.ts` — walidatory
+  zależne od innych pól, mapowanie formularza na produkt, formatowanie ceny i stanu magazynu.
+- `components/products/add-product-dialog.test.tsx` — przepływ formularza: blokada przejścia
+  dalej przy błędach, przeliczanie cen i VAT, walidacja pola „ilość na magazynie” i limitów
+  koszyka, zachowanie wartości po powrocie oraz reset po zamknięciu dialogu.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Struktura
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `app/page.tsx` — strona główna: tabela produktów + przycisk „Dodaj produkt”.
+- `components/products/product-table.tsx` — tabela produktów z paginacją (nuqs, `?page=`);
+  `product-card.tsx` to jej widok mobilny.
+- `components/products/add-product-dialog.tsx` — okno `Dialog` składające kreator w całość.
+- `components/products/wizard/` — logika i widoki kreatora:
+  - `use-product-wizard.ts` — stan kroku i formularza, blokada przejścia dalej przy błędach,
+  - `steps/` — po jednym pliku na krok (`basic-info`, `pricing`, `availability`),
+  - `wizard-footer.tsx` — przyciski Wstecz / Dalej / Zapisz.
+- `components/products/form/` — warstwa TanStack Form (`createFormHook` + `withForm`):
+  `use-app-form.ts` rejestruje typowane komponenty pól z `form/fields/`, które czytają
+  stan przez `useFieldContext` (bez `any` i rzutowań).
+- `lib/products/schema.ts` — schematy Zod dla każdego kroku formularza + typy.
+- `lib/products/field-validators.ts` — walidatory zależne od innych pól (min/maks, magazyn).
+- `lib/products/mock-data.ts` — 5 przykładowych produktów (dane startowe).
+- `components/ui/*` — komponenty shadcn/ui.
 
-## Deploy on Vercel
+## Funkcjonalność formularza
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Informacje podstawowe** — nazwa, SKU (tylko litery/cyfry, max 24 znaki), opis, producent,
+   kategoria, cechy produktu (multi-select w formie przełączanych plakietek).
+2. **Cena** — cena netto/brutto wzajemnie przeliczane wg wybranej stawki VAT
+   (`brutto = netto × (1 + VAT / 100)`), waluta.
+3. **Dostępność i stany magazynowe** — przełącznik dostępności, checkbox „produkt limitowany”
+   (odsłania pole ilości na magazynie), minimalna/maksymalna ilość w koszyku (walidacja
+   krzyżowa min ≤ max).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Przejście do kolejnego kroku jest zablokowane, dopóki bieżący krok nie przejdzie walidacji Zod.
+Powrót do poprzedniego kroku nie czyści wprowadzonych danych. Zamknięcie okna (przyciskiem X lub
+poza modalem) resetuje formularz do kroku 1. Po zapisaniu produkt trafia do tabeli, a użytkownik
+widzi potwierdzenie w postaci toasta.
