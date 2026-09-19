@@ -20,7 +20,7 @@ export function WizardFooter({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 border-t border-border bg-muted/50 p-4",
+        "flex items-center gap-2 border-t border-border bg-muted/50 p-4 pt-[15px]",
         isFirstStep ? "justify-end" : "justify-between"
       )}
     >

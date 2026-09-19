@@ -38,7 +38,7 @@ export function AddProductDialog({
         showCloseButton={false}
         className="fixed inset-0 flex h-full max-h-full w-full max-w-full translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none p-0 ring-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:h-auto sm:max-h-[85vh] sm:max-w-[720px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:ring-1"
       >
-        <div className="flex items-start gap-2 px-4 py-6 sm:border-b sm:border-border">
+        <div className="flex items-start gap-2 px-4 py-6 sm:border-b sm:border-border sm:pb-[23px]">
           <DialogTitle className="flex-1 text-base leading-none font-medium">
             Dodaj nowy produkt
           </DialogTitle>

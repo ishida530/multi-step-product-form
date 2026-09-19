@@ -11,6 +11,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      offset={{ right: 18, bottom: 17 }}
       icons={{
         success: (
           <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-green-600">
@@ -36,12 +37,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "8px",
+          "--width": "336px",
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
           toast: "cn-toast",
-          title: "text-sm",
+          title: "text-sm leading-5",
         },
       }}
       {...props}

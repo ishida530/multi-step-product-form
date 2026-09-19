@@ -37,7 +37,7 @@ export function ProductTable({
   const caption = `Strona ${currentPage} z ${totalPages} · ${products.length} produktów`;
 
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6 px-4 py-6 sm:px-6 sm:py-[50px]">
+    <div className="mx-auto flex w-full max-w-[1288px] flex-col gap-6 px-4 py-6 sm:px-6 sm:py-[50px]">
       <div className="flex items-center justify-between gap-1 sm:h-[52px]">
         <div className="flex flex-col justify-center gap-1">
           <h1 className="text-xl font-semibold text-foreground">Produkty</h1>
@@ -71,10 +71,10 @@ export function ProductTable({
 
       {/* Desktop: table */}
       <div className="hidden w-full overflow-hidden rounded-lg border border-border bg-card shadow-xs sm:block">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow className="bg-gray-50 hover:bg-gray-50">
-              <TableHead className="h-10 w-[29%] px-4 text-muted-foreground">
+              <TableHead className="h-10 w-[28.8%] px-4 text-muted-foreground">
                 Nazwa
               </TableHead>
               <TableHead className="h-10 px-4 text-muted-foreground">

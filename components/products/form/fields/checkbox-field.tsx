@@ -1,6 +1,7 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useFormField } from "./use-form-field";
 
 export function CheckboxField({ label }: { label: string }) {
@@ -13,12 +14,9 @@ export function CheckboxField({ label }: { label: string }) {
         checked={field.state.value}
         onCheckedChange={(checked) => field.handleChange(checked === true)}
       />
-      <label
-        htmlFor={field.name}
-        className="cursor-pointer text-sm font-medium text-foreground"
-      >
+      <Label htmlFor={field.name} className="cursor-pointer leading-5">
         {label}
-      </label>
+      </Label>
     </div>
   );
 }

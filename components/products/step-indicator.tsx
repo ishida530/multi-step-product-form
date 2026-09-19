@@ -9,7 +9,7 @@ const STEPS = [
 
 export function StepIndicator({ currentStep }: { currentStep: 1 | 2 | 3 }) {
   return (
-    <div className="mx-4 flex items-center gap-4 border-t border-b border-border py-6 sm:mx-0 sm:border-t-0 sm:px-4 sm:py-3">
+    <div className="mx-4 flex items-center gap-4 border-t border-b border-border py-6 sm:mx-0 sm:border-t-0 sm:px-4 sm:py-3 sm:pb-[11px]">
       {STEPS.map((step, index) => {
         const stepNumber = index + 1;
         const isDone = stepNumber < currentStep;

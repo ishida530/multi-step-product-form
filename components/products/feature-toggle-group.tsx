@@ -1,7 +1,9 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+/** Multi-select cech produktu: każda cecha to `Badge` renderowany jako przycisk przełączający. */
 export function FeatureToggleGroup({
   options,
   value,
@@ -24,21 +26,21 @@ export function FeatureToggleGroup({
       {options.map((option) => {
         const selected = value.includes(option);
         return (
-          <button
+          <Badge
             key={option}
-            type="button"
-            onClick={() => toggle(option)}
-            aria-pressed={selected}
+            variant={selected ? "default" : "outline"}
+            render={
+              <button type="button" aria-pressed={selected} onClick={() => toggle(option)} />
+            }
             className={cn(
-              "inline-flex h-[26px] shrink-0 items-center justify-center rounded-4xl border px-2 py-0.5 text-sm whitespace-nowrap outline-none transition-colors active:translate-y-px",
-              "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              "h-6 cursor-pointer py-px text-sm leading-5 font-normal active:translate-y-px",
               selected
-                ? "border-transparent bg-primary text-primary-foreground hover:bg-primary/80"
-                : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "hover:bg-primary/80"
+                : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
             {option}
-          </button>
+          </Badge>
         );
       })}
     </div>
