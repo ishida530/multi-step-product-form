@@ -172,6 +172,76 @@ describe("AddProductDialog", () => {
     expect(await screen.findByLabelText("Cena netto")).toHaveValue(50);
   });
 
+  it("pokazuje błędy kroku 2 i nie pozwala przejść dalej bez cen", async () => {
+    const user = userEvent.setup();
+    render(<Harness onCreate={vi.fn()} />);
+
+    await fillStep1(user);
+    await next(user);
+    await screen.findByLabelText("Cena netto");
+
+    await next(user);
+
+    expect(await screen.findByText("Cena netto musi być większa od 0")).toBeInTheDocument();
+    expect(screen.getByText("Cena brutto musi być większa od 0")).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: "Produkt limitowany" })).not.toBeInTheDocument();
+  });
+
+  it("pokazuje błąd magazynu także wtedy, gdy min. ilość jest pusta", async () => {
+    const user = userEvent.setup();
+    render(<Harness onCreate={vi.fn()} />);
+
+    await fillStep1(user);
+    await next(user);
+    await user.type(await screen.findByLabelText("Cena netto"), "100");
+    await next(user);
+
+    await user.click(await screen.findByRole("checkbox", { name: "Produkt limitowany" }));
+    await user.clear(screen.getByLabelText("Minimalna ilość"));
+    await user.click(screen.getByRole("button", { name: "Zapisz produkt" }));
+
+    expect(await screen.findByText("Podaj ilość na magazynie")).toBeInTheDocument();
+    expect(screen.getByText("Podaj minimalną ilość")).toBeInTheDocument();
+  });
+
+  it("po zapisie zamyka dialog, a ponowne otwarcie zaczyna od pustego kroku 1", async () => {
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    render(<Harness onCreate={onCreate} />);
+
+    await fillStep1(user);
+    await next(user);
+    await user.type(await screen.findByLabelText("Cena netto"), "100");
+    await next(user);
+    await user.click(await screen.findByRole("button", { name: "Zapisz produkt" }));
+
+    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Zapisz produkt" })).not.toBeInTheDocument()
+    );
+
+    await user.click(screen.getByRole("button", { name: "Otwórz" }));
+    expect(await screen.findByLabelText("Nazwa produktu")).toHaveValue("");
+    expect(screen.queryByLabelText("Cena netto")).not.toBeInTheDocument();
+  });
+
+  it("zamknięcie klawiszem Escape resetuje formularz do kroku 1", async () => {
+    const user = userEvent.setup();
+    render(<Harness onCreate={vi.fn()} />);
+
+    await fillStep1(user);
+    await next(user);
+    expect(await screen.findByLabelText("Cena netto")).toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByLabelText("Cena netto")).not.toBeInTheDocument()
+    );
+
+    await user.click(screen.getByRole("button", { name: "Otwórz" }));
+    expect(await screen.findByLabelText("Nazwa produktu")).toHaveValue("");
+  });
+
   it("zamknięcie dialogu resetuje formularz do kroku 1", async () => {
     const user = userEvent.setup();
     render(<Harness onCreate={vi.fn()} />);
