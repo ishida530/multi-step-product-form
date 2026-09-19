@@ -4,15 +4,15 @@ import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { ProductTable } from "@/components/products/product-table";
 import { AddProductDialog } from "@/components/products/add-product-dialog";
-import { MOCK_PRODUCTS } from "@/lib/products/mock-data";
-import type { NewProduct, Product } from "@/lib/products/types";
+import { useProducts } from "@/lib/products/use-products";
+import type { NewProduct } from "@/lib/products/types";
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const { products, addProduct } = useProducts();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   function handleCreate(product: NewProduct) {
-    setProducts((prev) => [...prev, { ...product, id: crypto.randomUUID() }]);
+    addProduct(product);
     toast.success("Produkt został dodany");
   }
 
