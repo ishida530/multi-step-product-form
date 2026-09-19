@@ -34,14 +34,16 @@ npm run build   # build produkcyjny
 npm run start   # uruchomienie builda produkcyjnego
 npm run lint    # ESLint
 npm test        # testy (Vitest + Testing Library)
+npm run typecheck  # generuje typy Next.js i uruchamia tsc
 ```
 
 ## Testy
 
 - `lib/products/schema.test.ts` — schematy Zod wszystkich trzech kroków (każda reguła walidacji
   ze specyfikacji) oraz przeliczanie cen netto/brutto.
-- `lib/products/field-validators.test.ts`, `lib/products/mappers.test.ts` — walidatory
-  zależne od innych pól, mapowanie formularza na produkt, formatowanie ceny i stanu magazynu.
+- `lib/products/field-validators.test.ts`, `lib/products/mappers.test.ts` — błędy pól ze
+  schematu, mapowanie formularza na produkt, formatowanie ceny i stanu magazynu.
+- `lib/products/use-products.test.ts` — dodawanie produktów i zachowanie ich po odświeżeniu.
 - `components/products/add-product-dialog.test.tsx` — przepływ formularza: blokada przejścia
   dalej przy błędach, przeliczanie cen i VAT, walidacja pola „ilość na magazynie” i limitów
   koszyka, zachowanie wartości po powrocie oraz reset po zamknięciu dialogu.
@@ -60,8 +62,12 @@ npm test        # testy (Vitest + Testing Library)
   `use-app-form.ts` rejestruje typowane komponenty pól z `form/fields/`, które czytają
   stan przez `useFieldContext` (bez `any` i rzutowań).
 - `lib/products/schema.ts` — schematy Zod dla każdego kroku formularza + typy.
-- `lib/products/field-validators.ts` — walidatory zależne od innych pól (min/maks, magazyn).
+- `lib/products/field-validators.ts` — przypisuje błędy schematu Zod do pojedynczych pól, więc
+  reguły zależne od kilku pól (min ≤ maks, magazyn dla produktu limitowanego) są zapisane tylko
+  w schemacie.
 - `lib/products/mock-data.ts` — 5 przykładowych produktów (dane startowe).
+- `lib/products/use-products.ts` — lista produktów zapisywana w `localStorage`, dzięki czemu
+  odświeżenie strony zachowuje dodane produkty i numer strony z URL.
 - `components/ui/*` — komponenty shadcn/ui.
 
 ## Funkcjonalność formularza
